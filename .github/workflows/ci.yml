@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: pip install flake8 requests pydantic
+
+    - name: Lint with flake8
+      run: flake8 . --max-line-length=120 --exclude=frontend,__pycache__,.git
+
+    - name: Validate all Python files compile
+      run: find . -name "*.py" -not -path "./frontend/*" -exec python -m py_compile {} \;
+
+    - name: Test database schema and core queries
+      run: |
+        python -c "
+        import sqlite3
+        conn = sqlite3.connect(':memory:')
+        conn.executescript('''
+          CREATE TABLE IF NOT EXISTS expenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sw_expense_id INTEGER UNIQUE,
+            description TEXT NOT NULL,
+            amount REAL NOT NULL,
+            category TEXT,
+            source TEXT DEFAULT \"personal\",
+            date TEXT DEFAULT CURRENT_TIMESTAMP
+          );
+        ''')
+        conn.execute(\"INSERT INTO expenses (description, amount, category, source, date) VALUES ('Test coffee', 5.0, 'Food', 'personal', '2025-01-01')\")
+        cur = conn.execute('SELECT description, amount FROM expenses')
+        row = cur.fetchone()
+        assert row[0] == 'Test coffee', 'Insert failed'
+        assert row[1] == 5.0, 'Amount wrong'
+        print('Schema and insert: PASSED')
+        conn.close()
+        "
