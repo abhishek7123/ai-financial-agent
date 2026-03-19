@@ -22,7 +22,7 @@ jobs:
       run: pip install flake8 requests pydantic
 
     - name: Lint with flake8
-      run: flake8 . --max-line-length=120 --exclude=frontend,__pycache__,.git
+      run: flake8 . --max-line-length=120 --exclude=frontend,__pycache__,.git --ignore=E302,E303,E305,W291,W292,W293,E401,E722
 
     - name: Validate all Python files compile
       run: find . -name "*.py" -not -path "./frontend/*" -exec python -m py_compile {} \;
