@@ -19,6 +19,9 @@ using LangGraph, SQLite, and Splitwise integration.
 | `get_spending_trends` | Time-series trend data |
 | `get_category_breakdown` | Category-wise spending breakdown |
 | `sync_splitwise` | Syncs and converts Splitwise expenses |
+| `delete_expense` | Deletes an expense by ID |
+| `get_monthly_comparison` | Compares spending between two periods |
+
 
 ## Tech stack
 Python · LangGraph · SQLite · Splitwise API · Gradio
